@@ -4,13 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Backup"
-        mc:Ignorable="d" Height="450" Width="800" Background="#FF484848" Title="Backup" ResizeMode="CanMinimize">
+        mc:Ignorable="d" Height="450" Width="800" Background="#FF484848" Title="Backup" ResizeMode="CanMinimize" Closing="OnClose">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="PathsList" Grid.ColumnSpan="2" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="220,0,0,0" Background="#FF373737" SelectionChanged="ListSelctionChange" Foreground="White">
+        <ListView x:Name="PathsList" Grid.ColumnSpan="2" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="220,0,0,0" Background="#FF373737" SelectionChanged="ListSelctionChange" Foreground="White" BorderBrush="#FF373737">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Path" Width="480" DisplayMemberBinding="{Binding Path}"/>
@@ -24,7 +24,7 @@
         <Button x:Name="RmButton" Content="Remove" Margin="414,0,0,0" Click="RemovePathClick" Height="58" VerticalAlignment="Bottom" IsEnabled="False" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="192"/>
         <Button Content="Select" HorizontalAlignment="Left" Margin="30,123,0,0" VerticalAlignment="Top" Width="159" Click="SelectNewBackupPath" Grid.ColumnSpan="2"/>
         <TextBlock x:Name="SelectedPathBox" HorizontalAlignment="Left" Margin="30,55,0,0" TextWrapping="Wrap" Text="Selected Backup Path:" VerticalAlignment="Top" Foreground="White" Width="159" Grid.ColumnSpan="2"/>
-        <Button x:Name="BackupButton" HorizontalAlignment="Left" Margin="10,0,0,10" Width="210" Click="StartBackupClick" Background="#FF06B025" Grid.ColumnSpan="2" Height="48" VerticalAlignment="Bottom" Content="Start Backup"/>
+        <Button x:Name="BackupButton" HorizontalAlignment="Left" Width="220" Click="StartBackupClick" Background="#FF06B025" Grid.ColumnSpan="2" Height="58" VerticalAlignment="Bottom" Content="Start Backup"/>
 
     </Grid>
 </Window>

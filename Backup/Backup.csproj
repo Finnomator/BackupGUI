@@ -9,18 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="223384.ico" />
+    <None Remove="BackupPath.txt" />
+    <None Remove="SelectFile.bat" />
+    <None Remove="ToBackupPaths.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BackupPath.txt">
+    <Content Include="223384.ico" />
+    <Content Include="BackupPath.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="SelectFile.bat">
+    </Content>
+    <Content Include="SelectFile.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="ToBackupPaths.txt">
+    </Content>
+    <Content Include="ToBackupPaths.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 </Project>

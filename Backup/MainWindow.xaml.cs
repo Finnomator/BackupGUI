@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
 
 namespace Backup
 {
@@ -20,11 +17,11 @@ namespace Backup
     {
         List<string> PathsToBackup;
         string DestPath;
-        int copiers = 0;
-        int copiersDone = 0;
+        private List<Process> copierList;
         public MainWindow()
         {
             InitializeComponent();
+            copierList = new();
             PathsToBackup = GetBackupPaths();
             DestPath = GetDestPath();
 
@@ -33,10 +30,12 @@ namespace Backup
             else
                 DestNotSet();
 
-            foreach(string path in PathsToBackup)
+            foreach (string path in PathsToBackup)
             {
                 PathsList.Items.Add(new ListLabel { Path = path, Status = "Ready" });
             }
+
+            
         }
 
         void DestIsSet()
@@ -123,7 +122,7 @@ namespace Backup
                 return;
 
             PathsToBackup.Add(selectedFolder);
-            PathsList.Items.Add(new ListLabel { Path = selectedFolder, Status = "Ready"});
+            PathsList.Items.Add(new ListLabel { Path = selectedFolder, Status = "Ready" });
 
             UpdateBackupPathsFile();
         }
@@ -145,8 +144,25 @@ namespace Backup
         {
             for (int i = 0; i < PathsToBackup.Count; i++)
             {
-                copiers += 1;
                 string source = PathsToBackup[i];
+
+                if (!Directory.Exists(source))
+                {
+                    FindListLabel(source).Status = "Skiped";
+                    PathsList.Items.Refresh();
+                    MessageBox.Show("The path \"" + source + "\" does not exist!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    if (copierList.Count == 0)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            BackupButton.IsEnabled = true;
+                        });
+                    }
+
+                    continue;
+                }
+
                 string dest = DestPath + source.Split("\\").Last();
                 Process p = new Process
                 {
@@ -159,40 +175,32 @@ namespace Backup
                         CreateNoWindow = true,
                     }
                 };
+
                 p.EnableRaisingEvents = true;
                 p.Exited += new EventHandler(RoboCopyExit);
+                copierList.Add(p);
                 p.Start();
 
-                foreach (ListLabel item in PathsList.Items)
-                {
-                    if (source == item.Path)
-                    {
-                        item.Status = "Copying...";
-                        PathsList.Items.Refresh();
-                    }
-                }
+
+                FindListLabel(source).Status = "Copying";
+                PathsList.Items.Refresh();
             }
         }
 
         private void RoboCopyExit(object sender, EventArgs e)
         {
-            copiersDone += 1;
             Process p = (Process)sender;
             string pSource = p.StartInfo.Arguments.Split('"', 3)[1];
-            foreach (ListLabel item in PathsList.Items)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    string itemSource = item.Path;
-                    if (pSource == itemSource)
-                    {
-                        item.Status = "Done";
-                        PathsList.Items.Refresh();
-                    }
-                });
-            }
+            copierList.Remove(p);
 
-            if (copiers == copiersDone)
+            Dispatcher.Invoke(() =>
+            {
+                FindListLabel(pSource).Status = "Done";
+                PathsList.Items.Refresh();
+            });
+
+
+            if (copierList.Count == 0)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -201,8 +209,28 @@ namespace Backup
             }
         }
 
+        private ListLabel? FindListLabel(string Path)
+        {
+            foreach (ListLabel item in PathsList.Items)
+            {
+                if (Path == item.Path)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
         private void StartBackupClick(object sender, RoutedEventArgs e)
         {
+
+            if (!Directory.Exists(DestPath))
+            {
+                MessageBox.Show("The path \"" + DestPath + "\" does not exist!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             BackupButton.IsEnabled = false;
             BackupFiles();
         }
@@ -219,7 +247,7 @@ namespace Backup
                 StartInfo =
                 {
                 FileName = "cmd.exe",
-                Arguments = "/c start " + selectedItem.Path,
+                Arguments = "/c start \"\" \"" + selectedItem.Path + "\"",
                 UseShellExecute = false,
                 RedirectStandardOutput = false,
                 CreateNoWindow = true,
@@ -233,6 +261,29 @@ namespace Backup
         {
             RmButton.IsEnabled = true;
             OpenButton.IsEnabled = true;
+        }
+
+        private void OnClose(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var roboCopies = Process.GetProcessesByName("Robocopy");
+
+            if (roboCopies.Length != 0)
+            {
+                MessageBoxResult boxResult = MessageBox.Show("Some paths have not yet been fully backed up. Quit anyway?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                
+                if (((int)boxResult) == 7)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
+            foreach (var p in roboCopies)
+            {
+                p.Kill();
+                p.WaitForExit();
+                p.Dispose();
+            }
         }
     }
 }
