@@ -1,5 +1,5 @@
 # BackupGUI
-A wrapper for [Microsoft Robocopy](https://docs.microsoft.com/de-de/windows-server/administration/windows-commands/robocopy).
+A wrapper for [Microsoft Robocopy](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy).
 
 ## Installation
 - Visit the [release page](https://github.com/Finnomator/BackupGUI/releases/tag/Release-1.0)
@@ -18,3 +18,5 @@ Used Robocopy parameters:
 |---|---|
 |/s|Copies subdirectories. This option automatically **excludes empty directories**.|
 |/mir|**Mirrors** a directory tree -> All modified files will be **overwriten**.|
+
+[Learn more](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy)
